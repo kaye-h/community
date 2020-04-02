@@ -1,5 +1,7 @@
 package com.liangzai.community.service;
 
+import com.liangzai.community.Exception.CustomizeErrorCode;
+import com.liangzai.community.Exception.CustomizeException;
 import com.liangzai.community.dto.PaginationDTO;
 import com.liangzai.community.dto.QuestionDTO;
 import com.liangzai.community.mapper.QuestionMapper;
@@ -103,6 +105,9 @@ public class QuestionService {
 
     public QuestionDTO getById(Integer id) {
         Question question = questionMapper.selectByPrimaryKey(id);
+        if (question == null){
+            throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FROUND);
+        }
         QuestionDTO questionDTO = new QuestionDTO();
         BeanUtils.copyProperties(question,questionDTO);
         User user = userMapper.selectByPrimaryKey(question.getCreator());
@@ -126,7 +131,10 @@ public class QuestionService {
             QuestionExample example = new QuestionExample();
             example.createCriteria()
                     .andIdEqualTo(question.getId());
-            questionMapper.updateByExampleSelective(updateQuestion, example);
+            int updated = questionMapper.updateByExampleSelective(updateQuestion, example);
+            if (updated != 1){
+                throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FROUND);
+            }
         }
     }
 }
