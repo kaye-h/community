@@ -4,6 +4,7 @@ import com.liangzai.community.Exception.CustomizeErrorCode;
 import com.liangzai.community.Exception.CustomizeException;
 import com.liangzai.community.dto.PaginationDTO;
 import com.liangzai.community.dto.QuestionDTO;
+import com.liangzai.community.mapper.QuestionExtMapper;
 import com.liangzai.community.mapper.QuestionMapper;
 import com.liangzai.community.mapper.UserMapper;
 import com.liangzai.community.model.Question;
@@ -24,6 +25,9 @@ public class QuestionService {
     private QuestionMapper questionMapper;
     @Autowired(required = false)
     private UserMapper userMapper;
+
+    @Autowired(required = false)
+    private QuestionExtMapper questionExtMapper;
 
     public PaginationDTO list(Integer page, Integer size) {
 
@@ -120,6 +124,18 @@ public class QuestionService {
             //创建
             question.setGmtCreate(System.currentTimeMillis());
             question.setGmtModified(question.getGmtCreate());
+
+            //修BUG
+            if (question.getCommentCount()==null){
+                question.setCommentCount(0);
+            }
+            if (question.getViewCount()==null){
+                question.setViewCount(0);
+            }
+            if (question.getLikeCount()==null){
+                question.setLikeCount(0);
+            }
+            //
             questionMapper.insert(question);
         }else {
             //更新
@@ -136,5 +152,14 @@ public class QuestionService {
                 throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FROUND);
             }
         }
+    }
+
+    public void incView(Integer id) {
+
+        Question question = new Question();
+        question.setId(id);
+        question.setViewCount(1);
+        questionExtMapper.incView(question);
+
     }
 }
